@@ -12,6 +12,9 @@ class Usuario {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
+        
+        // Auto-registro no repositório
+        RepositorioSingleton.getInstance().registrarUsuario(this);
     }
 
     // Getters

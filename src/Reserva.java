@@ -1,6 +1,7 @@
 import java.time.LocalDate;
 import java.util.List;
 
+// Classe para representar uma reserva de sala
 class Reserva {
     private static int contadorId = 1;
     
@@ -23,6 +24,7 @@ class Reserva {
         this.data = data;
     }
 
+    // Getters
     public int getId() { return id; }
     public Sala getSala() { return sala; }
     public List<Usuario> getUsuarios() { return usuarios; }

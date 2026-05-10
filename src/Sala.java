@@ -6,6 +6,9 @@ class Sala {
     public Sala(int id, int tamanho) {
         this.id = id;
         this.tamanho = tamanho;
+        
+        // Auto-registro no repositório
+        RepositorioSingleton.getInstance().registrarSala(this);
     }
 
     // Getters
