@@ -67,10 +67,10 @@ public class SistemaFacade {
     }
 
     public static class ReservaUsuarioDTO {
-        public final Reserva reserva;
+        public final IReserva reserva;
         public final boolean isOrganizador;
 
-        public ReservaUsuarioDTO(Reserva reserva, boolean isOrganizador) {
+        public ReservaUsuarioDTO(IReserva reserva, boolean isOrganizador) {
             this.reserva = reserva;
             this.isOrganizador = isOrganizador;
         }
@@ -86,7 +86,7 @@ public class SistemaFacade {
 
         for (Sala sala : repositorio.getSalas()) {
             // Busca se existe alguma reserva conflitante para esta sala no horário especificado
-            Reserva conflito = repositorio.getReservas().stream()
+            IReserva conflito = repositorio.getReservas().stream()
                     .filter(r -> r.getSala().getId() == sala.getId() &&
                                  r.getData().equals(data) &&
                                  r.getHoraInicio().isBefore(fim) &&
@@ -117,7 +117,7 @@ public class SistemaFacade {
 
     // --- Operações de Reserva (CRUD) ---
 
-    public Reserva criarReserva(int idSala, List<Usuario> convidados, LocalDate data, LocalTime horaInicio, LocalTime horaFim) {
+    public IReserva criarReserva(int idSala, List<Usuario> convidados, LocalDate data, LocalTime horaInicio, LocalTime horaFim, List<String> materiaisExtra) {
         validarSessao();
 
         Sala sala = repositorio.getSalas().stream()
@@ -127,25 +127,28 @@ public class SistemaFacade {
 
         List<Usuario> usuariosReserva = montarListaUsuarios(convidados);
 
-        return gerenciador.criarReserva(sala, usuariosReserva, data, horaInicio, horaFim);
-    }
-
-    public Reserva alterarReserva(int idReserva, List<Usuario> novosConvidados, LocalDate novaData, LocalTime novaHoraInicio, LocalTime novaHoraFim) {
-        validarSessao();
-
-        Reserva reservaOriginal = buscarReservaValidandoAutorizacao(idReserva);
-        List<Usuario> novosUsuariosReserva = montarListaUsuarios(novosConvidados);
-
-        return gerenciador.alterarReserva(reservaOriginal, reservaOriginal.getSala(), novosUsuariosReserva, novaData, novaHoraInicio, novaHoraFim);
+        return gerenciador.criarReserva(sala, usuariosReserva, data, horaInicio, horaFim, materiaisExtra);
     }
 
     public boolean deletarReserva(int idReserva) {
         if (this.usuarioLogado == null) return false;
 
-        Reserva reserva = buscarReservaValidandoAutorizacao(idReserva);
+        IReserva reserva = buscarReservaValidandoAutorizacao(idReserva);
         repositorio.removerReserva(reserva);
         
         return true;
+    }
+
+    public IReserva alterarReserva(int idReserva, List<Usuario> convidados, LocalDate novaData, LocalTime novoInicio, LocalTime novoFim) {
+        validarSessao();
+
+        IReserva reservaOriginal = buscarReservaValidandoAutorizacao(idReserva);
+
+        Sala sala = reservaOriginal.getSala();
+
+        List<Usuario> usuariosReserva = montarListaUsuarios(convidados);
+
+        return gerenciador.alterarReserva(reservaOriginal, sala, usuariosReserva, novaData, novoInicio, novoFim);
     }
 
     // --- Métodos Auxiliares Internos ---
@@ -156,8 +159,8 @@ public class SistemaFacade {
         }
     }
 
-    private Reserva buscarReservaValidandoAutorizacao(int idReserva) {
-        Reserva reserva = repositorio.getReservas().stream()
+    private IReserva buscarReservaValidandoAutorizacao(int idReserva) {
+        IReserva reserva = repositorio.getReservas().stream()
                 .filter(r -> r.getId() == idReserva)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada."));
@@ -177,7 +180,7 @@ public class SistemaFacade {
         return listaCompleta;
     }
 
-    public List<Reserva> gerarRelatorioDiario() {
+    public List<IReserva> gerarRelatorioDiario() {
         return repositorio.getReservas().stream()
                 .filter(r -> r.getData().equals(DIA_ATUAL))
                 .collect(Collectors.toList());

@@ -3,12 +3,12 @@ import java.util.List;
 // Arquivos Observer: Interface e Implementação
 
 interface ReservaObserver {
-    void onReservaAlterada(Reserva reservaOriginal, Reserva reservaModificada);
+    void onReservaAlterada(IReserva reservaOriginal, IReserva reservaModificada);
 }
 
 class ServicoNotificacaoEmail implements ReservaObserver {
     @Override
-    public void onReservaAlterada(Reserva reservaOriginal, Reserva reservaModificada) {
+    public void onReservaAlterada(IReserva reservaOriginal, IReserva reservaModificada) {
         List<Usuario> usuariosEnvolvidos = reservaModificada.getUsuarios();
         
         System.out.println("--- Iniciando Envio de Notificações ---");
