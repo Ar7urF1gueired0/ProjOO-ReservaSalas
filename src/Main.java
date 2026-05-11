@@ -97,11 +97,11 @@ public class Main {
                         break;
                     case 5:
                         System.out.println("\n--- Relatório Diário (" + SistemaFacade.DIA_ATUAL.format(DATE_FORMAT) + ") ---");
-                        List<Reserva> relatorio = facade.gerarRelatorioDiario();
+                        List<IReserva> relatorio = facade.gerarRelatorioDiario();
                         if (relatorio.isEmpty()) {
                             System.out.println("Nenhuma reserva para o dia de hoje.");
                         } else {
-                            for (Reserva r : relatorio) {
+                            for (IReserva r : relatorio) {
                                 System.out.printf("ID: %d | Sala: %d | Horário: %s - %s | Organizador: %s%n",
                                         r.getId(), r.getSala().getId(), r.getHoraInicio(), r.getHoraFim(), r.getOrganizador().getNome());
                             }
@@ -168,7 +168,7 @@ public class Main {
     // --- Fluxos Progressivos ---
 
     private static void fluxoCriarReserva() {
-        System.out.println(); // Pulo de linha para organizar a interface
+        System.out.println();
         LocalDate data;
         while (true) {
             data = lerData("Data (dd/MM/yyyy): ");
@@ -202,13 +202,46 @@ public class Main {
 
         int idSala = lerInteiro("\nID da Sala escolhida: ");
 
+        List<String> materiaisExtra = new ArrayList<>();
+        String tipoSala = agrupadas.values().stream()
+            .flatMap(List::stream)
+            .filter(d -> d.sala.getId() == idSala)
+            .map(d -> d.sala.getClass().getSimpleName())
+            .findFirst().orElse("");
+
+        if (tipoSala.equals("Laboratorio")) {
+            System.out.println("\nVocê deseja reservar materiais extras?");
+            System.out.println("1. Kit de equipamentos de física");
+            System.out.println("2. Kit de equipamentos de química");
+            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula: ");
+            if (escolhas.contains(1)) materiaisExtra.add("FISICA");
+            if (escolhas.contains(2)) materiaisExtra.add("QUIMICA");
+
+        } else if (tipoSala.equals("SalaAula")) {
+            System.out.println("\nVocê deseja reservar materiais extras?");
+            System.out.println("1. Kit de canetas de quadro branco");
+            System.out.println("2. Equipamentos de audiovisual");
+            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula: ");
+            if (escolhas.contains(1)) materiaisExtra.add("CANETAS");
+            if (escolhas.contains(2)) materiaisExtra.add("AUDIOVISUAL");
+
+        } else if (tipoSala.equals("SalaEstudo")) {
+            System.out.println("\nVocê deseja reservar materiais extras?");
+            System.out.println("1. Kit de canetas de quadro branco");
+            System.out.println("2. Computador para estudo");
+            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula: ");
+            if (escolhas.contains(1)) materiaisExtra.add("CANETAS");
+            if (escolhas.contains(2)) materiaisExtra.add("COMPUTADOR");
+        }
+
         System.out.println("\n--- Usuários Registrados ---");
         facade.listarTodosUsuarios().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
         
         List<Usuario> convidados = lerConvidadosSeguro("IDs dos Convidados (separados por vírgula, ou vazio): ");
 
-        Reserva nova = facade.criarReserva(idSala, convidados, data, inicio, fim);
+        IReserva nova = facade.criarReserva(idSala, convidados, data, inicio, fim, materiaisExtra);
         System.out.println("\nReserva criada com sucesso! ID: " + nova.getId());
+        System.out.println("Itens: " + nova.getDescricaoItens());
     }
 
     private static void fluxoAlterarReserva() {
@@ -245,6 +278,26 @@ public class Main {
                 return Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
                 System.out.println("Opção inválida. Digite um número inteiro.\n");
+            }
+        }
+    }
+
+    private static List<Integer> lerEscolhasMultiplas(String prompt) {
+        while (true) {
+            try {
+                System.out.print(prompt);
+                String input = scanner.nextLine();
+                
+                if (input == null || input.trim().isEmpty()) {
+                    return new ArrayList<>();
+                }
+                
+                return Arrays.stream(input.split(","))
+                        .map(String::trim)
+                        .map(Integer::parseInt)
+                        .collect(Collectors.toList());
+            } catch (NumberFormatException e) {
+                System.out.println("Formato inválido. Digite apenas números separados por vírgula, ou deixe vazio.\n");
             }
         }
     }

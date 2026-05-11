@@ -11,13 +11,13 @@ class ConflitoReservaException extends RuntimeException {
 
 public interface PoliticaDeReserva {
     // A reservaOriginal é repassada para ser ignorada durante a validação de uma alteração
-    void validar(Reserva novaReserva, List<Reserva> reservasExistentes, Reserva reservaOriginal);
+    void validar(IReserva novaReserva, List<IReserva> reservasExistentes, IReserva reservaOriginal);
 }
 
 class PoliticaPrimeiroAReservar implements PoliticaDeReserva {
     @Override
-    public void validar(Reserva novaReserva, List<Reserva> reservasExistentes, Reserva reservaOriginal) {
-        for (Reserva existente : reservasExistentes) {
+    public void validar(IReserva novaReserva, List<IReserva> reservasExistentes, IReserva reservaOriginal) {
+        for (IReserva existente : reservasExistentes) {
             if (reservaOriginal != null && existente.getId() == reservaOriginal.getId()) {
                 continue; // Ignora a própria reserva caso seja uma operação de alteração
             }
@@ -27,7 +27,7 @@ class PoliticaPrimeiroAReservar implements PoliticaDeReserva {
         }
     }
 
-    protected boolean houverSobreposicao(Reserva r1, Reserva r2) {
+    protected boolean houverSobreposicao(IReserva r1, IReserva r2) {
         return r1.getSala().getId() == r2.getSala().getId() &&
                r1.getData().equals(r2.getData()) &&
                r1.getHoraInicio().isBefore(r2.getHoraFim()) &&
@@ -37,10 +37,10 @@ class PoliticaPrimeiroAReservar implements PoliticaDeReserva {
 
 class PoliticaPrioridadeProfessor extends PoliticaPrimeiroAReservar {
     @Override
-    public void validar(Reserva novaReserva, List<Reserva> reservasExistentes, Reserva reservaOriginal) {
+    public void validar(IReserva novaReserva, List<IReserva> reservasExistentes, IReserva reservaOriginal) {
         boolean isNovoProfessor = novaReserva.getOrganizador() instanceof Professor;
 
-        for (Reserva existente : reservasExistentes) {
+        for (IReserva existente : reservasExistentes) {
             if (reservaOriginal != null && existente.getId() == reservaOriginal.getId()) {
                 continue;
             }

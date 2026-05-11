@@ -3,7 +3,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 // Classe para representar uma reserva de sala
-class Reserva {
+class Reserva implements IReserva{
     private static int contadorId = 1;
     
     private int id;
@@ -42,5 +42,10 @@ class Reserva {
 
     public Usuario getOrganizador() {
         return usuarios.get(0);
+    }
+
+    @Override
+    public String getDescricaoItens() {
+        return "Reserva da sala" + sala.getId();
     }
 }
