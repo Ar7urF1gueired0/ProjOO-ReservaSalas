@@ -9,7 +9,7 @@ class ConflitoReservaException extends RuntimeException {
     }
 }
 
-interface PoliticaDeReserva {
+public interface PoliticaDeReserva {
     // A reservaOriginal é repassada para ser ignorada durante a validação de uma alteração
     void validar(Reserva novaReserva, List<Reserva> reservasExistentes, Reserva reservaOriginal);
 }
