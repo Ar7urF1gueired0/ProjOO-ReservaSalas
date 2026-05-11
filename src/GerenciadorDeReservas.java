@@ -1,12 +1,16 @@
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GerenciadorDeReservas {
 
+    private final RepositorioSingleton repositorio;
     private PoliticaDeReserva politica;
     private final List<ReservaObserver> observadores = new ArrayList<>();
 
     public GerenciadorDeReservas(PoliticaDeReserva politicaInicial) {
+        this.repositorio = RepositorioSingleton.getInstance();
         this.politica = politicaInicial;
     }
 
@@ -26,5 +30,14 @@ public class GerenciadorDeReservas {
         for (ReservaObserver obs : observadores) {
             obs.onReservaAlterada(original, modificada);
         }
+    }
+
+    public Reserva criarReserva(Sala sala, List<Usuario> usuarios, LocalDate data, LocalTime horaInicio, LocalTime horaFim) {
+        Reserva novaReserva = new Reserva(sala, usuarios, data, horaInicio, horaFim);
+
+        politica.validar(novaReserva, repositorio.getReservas(), null);
+        repositorio.registrarReserva(novaReserva);
+
+        return novaReserva;
     }
 }
