@@ -87,11 +87,14 @@ public class Main {
                         break;
                     case 4:
                         System.out.println("\n--- Minhas Reservas ---");
-                        List<SistemaFacade.ReservaUsuarioDTO> minhas = facade.listarReservasUsuarioAtivo();
-                        for (SistemaFacade.ReservaUsuarioDTO dto : minhas) {
+                        List<SistemaFacade.ReservaUsuarioDTO> minhasReservas = facade.listarReservasUsuarioAtivo();
+                        if (minhasReservas.isEmpty()) {
+                            System.out.println("A lista está vazia!");
+                        }
+                        for (SistemaFacade.ReservaUsuarioDTO dto : minhasReservas) {
                             String papel = dto.isOrganizador ? "Organizador" : "Convidado";
-                            System.out.printf("ID Reserva: %d | Sala: %d | Data: %s | Horário: %s - %s | Papel: %s%n",
-                                    dto.reserva.getId(), dto.reserva.getSala().getId(), dto.reserva.getData(),
+                           System.out.printf("ID Reserva: %d | Detalhes: %s | Data: %s | Horário: %s - %s | Papel: %s%n",
+                                    dto.reserva.getId(), dto.reserva.getDescricaoItens(), dto.reserva.getData(),
                                     dto.reserva.getHoraInicio(), dto.reserva.getHoraFim(), papel);
                         }
                         break;
@@ -102,8 +105,8 @@ public class Main {
                             System.out.println("Nenhuma reserva para o dia de hoje.");
                         } else {
                             for (IReserva r : relatorio) {
-                                System.out.printf("ID: %d | Sala: %d | Horário: %s - %s | Organizador: %s%n",
-                                        r.getId(), r.getSala().getId(), r.getHoraInicio(), r.getHoraFim(), r.getOrganizador().getNome());
+                                System.out.printf("ID: %d | Detalhes: %s | Horário: %s - %s | Organizador: %s%n",
+                                        r.getId(), r.getDescricaoItens(), r.getHoraInicio(), r.getHoraFim(), r.getOrganizador().getNome());
                             }
                         }
                         break;
@@ -211,25 +214,28 @@ public class Main {
 
         if (tipoSala.equals("Laboratorio")) {
             System.out.println("\nVocê deseja reservar materiais extras?");
+            System.out.println("'vazio'. Nenhum material (Apenas a sala)");
             System.out.println("1. Kit de equipamentos de física");
             System.out.println("2. Kit de equipamentos de química");
-            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula: ");
+            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula (ou vazio): ");
             if (escolhas.contains(1)) materiaisExtra.add("FISICA");
             if (escolhas.contains(2)) materiaisExtra.add("QUIMICA");
 
         } else if (tipoSala.equals("SalaAula")) {
             System.out.println("\nVocê deseja reservar materiais extras?");
+            System.out.println("'vazio'. Nenhum material (Apenas a sala)");
             System.out.println("1. Kit de canetas de quadro branco");
             System.out.println("2. Equipamentos de audiovisual");
-            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula: ");
+            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula (ou vazio): ");
             if (escolhas.contains(1)) materiaisExtra.add("CANETAS");
             if (escolhas.contains(2)) materiaisExtra.add("AUDIOVISUAL");
 
         } else if (tipoSala.equals("SalaEstudo")) {
             System.out.println("\nVocê deseja reservar materiais extras?");
+            System.out.println("'vazio'. Nenhum material (Apenas a sala)");
             System.out.println("1. Kit de canetas de quadro branco");
             System.out.println("2. Computador para estudo");
-            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula: ");
+            List<Integer> escolhas = lerEscolhasMultiplas("Responda com números separados por vírgula (ou vazio): ");
             if (escolhas.contains(1)) materiaisExtra.add("CANETAS");
             if (escolhas.contains(2)) materiaisExtra.add("COMPUTADOR");
         }

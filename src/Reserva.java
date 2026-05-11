@@ -46,6 +46,6 @@ class Reserva implements IReserva{
 
     @Override
     public String getDescricaoItens() {
-        return "Reserva da sala" + sala.getId();
+        return "Reserva da sala " + sala.getId();
     }
 }
