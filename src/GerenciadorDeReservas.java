@@ -40,4 +40,15 @@ public class GerenciadorDeReservas {
 
         return novaReserva;
     }
+
+    public Reserva alterarReserva(Reserva reservaOriginal, Sala novaSala, List<Usuario> novosUsuarios, LocalDate novaData, LocalTime novaHoraInicio, LocalTime novaHoraFim) {
+        Reserva reservaModificada = new Reserva(novaSala, novosUsuarios, novaData, novaHoraInicio, novaHoraFim);
+
+        politica.validar(reservaModificada, repositorio.getReservas(), reservaOriginal);
+        repositorio.atualizarReserva(reservaOriginal, reservaModificada);
+
+        notificarObservadores(reservaOriginal, reservaModificada);
+
+        return reservaModificada;
+    }
 }
