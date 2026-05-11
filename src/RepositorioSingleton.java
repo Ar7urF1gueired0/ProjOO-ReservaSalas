@@ -27,6 +27,9 @@ public class RepositorioSingleton {
     // Métodos para registrar usuários, salas e reservas
     void registrarUsuario(Usuario u) { this.usuarios.add(u); }
     void registrarSala(Sala s) { this.salas.add(s); }
+    void registrarReserva(Reserva r) { this.reservas.add(r); }
+    void atualizarReserva(Reserva original, Reserva modificada) { this.reservas.remove(original); this.reservas.add(modificada); }
+    public void removerReserva(Reserva r) { this.reservas.remove(r); }
 
     // Métodos para obter listas de usuários, salas e reservas
     public List<Usuario> getUsuarios() { return Collections.unmodifiableList(usuarios); }
