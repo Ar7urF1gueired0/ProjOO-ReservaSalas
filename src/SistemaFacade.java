@@ -5,6 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Padrão Facade: Ponto de entrada principal do sistema de reservas.
+ * Esta classe isola a complexidade das regras de negócio (Gerenciador, Políticas, Repositório)
+ * e fornece uma interface simplificada para a interação com o usuário (Main).
+ */
 public class SistemaFacade {
 
     private final RepositorioSingleton repositorio;
@@ -22,7 +27,12 @@ public class SistemaFacade {
     }
 
     // --- Gestão de Sessão ---
-
+    /**
+     * Tenta realizar o login do usuário no sistema buscando suas credenciais no repositório.
+     * @param email Email do usuário.
+     * @param senha Senha do usuário.
+     * @return true se as credenciais forem válidas, false caso contrário.
+     */
     public boolean fazerLogin(String email, String senha) {
         this.usuarioLogado = repositorio.getUsuarios().stream()
                 .filter(u -> u.getEmail().equalsIgnoreCase(email) && u.getSenha().equals(senha))

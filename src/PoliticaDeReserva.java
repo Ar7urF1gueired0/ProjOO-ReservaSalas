@@ -9,8 +9,19 @@ class ConflitoReservaException extends RuntimeException {
     }
 }
 
+/**
+ * Padrão Strategy: Define a interface para as regras de validação de conflito de reservas.
+ * Permite que diferentes algoritmos de prioridade sejam aplicados dinamicamente.
+ */
 public interface PoliticaDeReserva {
-    // A reservaOriginal é repassada para ser ignorada durante a validação de uma alteração
+    /**
+     * Valida se uma nova reserva pode ser criada em relação às reservas já existentes.
+     * 
+     * @param novaReserva A reserva que está tentando ser registrada.
+     * @param reservasExistentes A lista atual de reservas do banco de dados.
+     * @param reservaOriginal (Opcional) A reserva que está sendo alterada, para ignorar conflitos consigo mesma.
+     * @throws ConflitoReservaException Se a reserva for inválida segundo a política.
+     */
     void validar(IReserva novaReserva, List<IReserva> reservasExistentes, IReserva reservaOriginal);
 }
 

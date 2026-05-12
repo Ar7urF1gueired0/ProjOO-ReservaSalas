@@ -1,54 +1,72 @@
-# 📅 Sistema de Agendamento de Salas (POO)
-Este projeto consiste em um sistema de gerenciamento e reserva de salas de estudo, desenvolvido como parte da disciplina de Projeto Orientado a Objetos. O foco principal é a aplicação prática de padrões de projeto (Design Patterns) para resolver problemas de agendamento e regras de prioridade acadêmica.
+# Sistema de Reserva de Salas 🏫
 
-## 🗂️ Estrutura do Projeto
-- /src: Contém todo o código-fonte desenvolvido em Java SE puro.
-- /doc: Documentação técnica, incluindo diagramas de classe UML e especificações de design.
-- README.md: Guia geral e instruções de uso.
+Um sistema de gerenciamento de reservas de salas (Laboratórios, Salas de Aula e Salas de Estudo) desenvolvido em Java. Este projeto aplica conceitos avançados de Programação Orientada a Objetos (POO) e Design Patterns para garantir uma arquitetura escalável, de fácil manutenção e aderente aos princípios SOLID.
 
-## 🏗️ Design Patterns Aplicados
-Para garantir um sistema extensível, robusto e de fácil manutenção, foram implementados quatro padrões principais:
+## 🚀 Funcionalidades
 
-- **1. Strategy (Resolução de Conflitos)**
-Utilizado para gerenciar as políticas de agendamento. Permite que o sistema alterne entre diferentes regras:
-Ordem de Chegada: O primeiro a reservar garante a sala.
+- **Autenticação de Usuários:** Controle de acesso diferenciado para Professores e Alunos.
+- **Gerenciamento de Reservas (CRUD):** Criação, alteração, listagem e exclusão de reservas.
+- **Alocação Dinâmica de Materiais:** Possibilidade de reservar equipamentos adicionais (Kits de Física/Química, Audiovisual, Computadores, etc.) dependendo do tipo da sala escolhida.
+- **Políticas de Prioridade:** Regras de negócio configuráveis que definem quem tem prioridade em caso de conflito de horários (ex: Professores podem sobrescrever reservas de Alunos dependendo da política ativa).
+- **Relatórios:** Geração de relatórios diários de ocupação e visualização de agenda por usuário.
+- **Notificações:** Sistema de alerta automático para convidados quando uma reserva sofre alterações.
 
-Prioridade Docente: Permite que um Docente sobrescreva a reserva de um Aluno.
+## 🧩 Arquitetura e Padrões de Projeto (Design Patterns)
 
-- **2. Observer (Notificações)**
-Implementa o fluxo de comunicação do sistema. Quando o status de uma reserva (Confirmada, Cancelada ou Alterada) sofre alteração, o Organizador e todos os Convidados são notificados automaticamente através deste padrão.
+O sistema foi desenhado visando o baixo acoplamento e a alta coesão, utilizando os seguintes padrões do _Gang of Four_ (GoF):
 
-- **3. Factory Method (Criação de Objetos)**
-Encapsula a lógica de criação das entidades do sistema. Centraliza a instância de diferentes tipos de salas (Laboratório, Estudo, Aula) e usuários (Aluno, Docente), mantendo o código cliente desacoplado das classes concretas.
+- **Facade (`SistemaFacade`):** Centraliza e simplifica a comunicação entre a interface do usuário (`Main`) e a complexa lógica de negócio do subsistema.
+- **Strategy (`PoliticaDeReserva`):** Permite a troca de regras de prioridade de reserva em tempo de execução (ex: `PoliticaPrimeiroAReservar` vs `PoliticaPrioridadeProfessor`).
+- **Decorator (`ReservaDecorator`):** Adiciona dinamicamente materiais extras (Física, Química, Audiovisual) às reservas base sem a necessidade de criar múltiplas subclasses, evitando a explosão de classes. A comunicação flui através da interface `IReserva`.
+- **Factory Method (`SalaFactory`):** Encapsula a lógica de criação de diferentes tipos de salas (Laboratórios, Salas de Aula e Estudo).
+- **Singleton (`RepositorioSingleton`):** Garante uma instância única do banco de dados em memória para consistência dos dados durante a execução.
+- **Observer (`ReservaObserver`):** Implementa notificações automáticas (ex: `ServicoNotificacaoEmail`) disparadas pelo `GerenciadorDeReservas` quando há modificações.
 
-- **4. Singleton (Repositório de Dados)**
-Como o sistema não utiliza banco de dados externo, o padrão Singleton garante que exista uma única instância do repositório em memória durante a execução, servindo como a fonte única de verdade para salas e usuários.
+## ⚙️ Como Executar o Projeto
 
-## 📋 Regras de Negócio
-- Persistência: Todos os dados são mantidos em memória durante a execução (volátil).
+O projeto roda inteiramente no terminal e não possui dependências externas complexas.
 
-- Hierarquia de Sobrescrita:
+**Pré-requisitos:**
 
-  - Um Aluno não sobrescreve outro Aluno.
+- [Java JDK](https://www.oracle.com/java/technologies/downloads/) instalado na máquina (versão 8 ou superior).
+- Git (opcional, para clonar o repositório).
 
-  - Um Docente não sobrescreve outro Docente.
+**Passo a passo:**
 
-  - Um Docente possui autoridade para sobrescrever a reserva de um Aluno.
+1. **Clone o repositório:**
 
-- Interface: A interação ocorre estritamente via Terminal (CLI).
+   ```bash
+   git clone <URL_DO_SEU_REPOSITORIO>
+   cd <NOME_DA_PASTA_DO_PROJETO>
+   ```
 
-## 🚀 Como Executar
-Certifique-se de ter o JDK 17 ou superior instalado.
+2. **Compile o código-fonte:**
 
-1. Clone o repositório.
-
-2. Compile os arquivos na pasta raiz:
-
-```Bash
-javac src/*.java
+```bash
+javac *.java
 ```
 
-3. Execute a classe principal:
-```Bash
-java src/Main
+3. **Inicie o sistema:**
+
+```bash
+java Main
 ```
+
+## 🎮 Como Usar (Dados Mockados)
+
+Para facilitar os testes imediatos, o sistema já é inicializado com dados _mock_ (fictícios). Você pode realizar o login com as seguintes credenciais:
+
+- **Para testar como Aluno:**
+  - _Email:_ `a1@email.com` (até `a5@email.com`)
+  - _Senha:_ `123`
+- **Para testar como Professor:**
+  - _Email:_ `p1@email.com` (até `p3@email.com`)
+  - _Senha:_ `123`
+
+Siga as instruções dos menus interativos no terminal para criar suas reservas, adicionar convidados, incluir materiais via Decorator e testar as quebras de política de prioridade.
+
+## 🚧 Próximos Passos (Roadmap)
+
+- **Controle de Acesso Baseado em Papéis (RBAC):** Expansão das capacidades do perfil de `Professor` para atuar como Administrador do sistema. Isso permitirá que professores cadastrem novas salas e registrem novos usuários diretamente pelo terminal, com menus de administração exclusivos e invisíveis para o perfil de `Aluno`.
+
+...
