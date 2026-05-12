@@ -3,6 +3,11 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Classe responsável por orquestrar a lógica de negócios central das reservas.
+ * Ela aplica as políticas de prioridade (Strategy), constrói os objetos com 
+ * materiais extras (Decorator) e notifica os interessados (Observer).
+ */
 public class GerenciadorDeReservas {
 
     private final RepositorioSingleton repositorio;
@@ -32,6 +37,18 @@ public class GerenciadorDeReservas {
         }
     }
 
+    /**
+     * Cria uma nova reserva, aplica os decoradores solicitados e valida as políticas de conflito.
+     * 
+     * @param sala A sala selecionada.
+     * @param usuarios Lista de usuários (o índice 0 deve ser o organizador).
+     * @param data Data da reserva.
+     * @param horaInicio Horário de início.
+     * @param horaFim Horário de término.
+     * @param materiaisExtra Lista de strings com os nomes dos kits extras (ex: "FISICA", "COMPUTADOR").
+     * @return IReserva A interface da reserva final, já decorada e validada.
+     * @throws ConflitoReservaException Se a política atual barrar a criação por sobreposição de horário.
+     */
     public IReserva criarReserva(Sala sala, List<Usuario> usuarios, LocalDate data, LocalTime horaInicio, LocalTime horaFim, List<String> materiaisExtra) {
         
         IReserva novaReserva = new Reserva(sala, usuarios, data, horaInicio, horaFim);

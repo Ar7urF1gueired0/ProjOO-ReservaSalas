@@ -1,0 +1,76 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "Interface e Controle" {
+    class Main {
+    }
+    class SistemaFacade {
+        - usuarioLogado : Usuario
+        + fazerLogin(email, senha) : boolean
+        + criarReserva(...) : IReserva
+        + alterarRegraDePrioridade(...)
+    }
+}
+
+package "Core - Regras de Negócio" {
+    class GerenciadorDeReservas {
+        + criarReserva(...) : IReserva
+        + adicionarObservador(obs : ReservaObserver)
+    }
+    
+    interface PoliticaDeReserva <<Strategy>> {
+        + validar(...)
+    }
+    class PoliticaPrimeiroAReservar implements PoliticaDeReserva
+    class PoliticaPrioridadeProfessor extends PoliticaPrimeiroAReservar
+}
+
+package "Dados e Modelos" {
+    class RepositorioSingleton <<Singleton>> {
+        - instancia : RepositorioSingleton
+        + getInstance() : RepositorioSingleton
+        + registrarReserva(r : IReserva)
+    }
+
+    class Usuario {
+        - id : int
+        - nome : String
+    }
+    class Aluno extends Usuario
+    class Professor extends Usuario
+
+    class Sala {
+        - id : int
+        - tamanho : int
+    }
+    class Laboratorio extends Sala
+    class SalaAula extends Sala
+}
+
+package "Padrão Decorator (Materiais Extras)" {
+    interface IReserva {
+        + getDescricaoItens() : String
+    }
+    class Reserva implements IReserva
+    abstract class ReservaDecorator implements IReserva {
+        - reservaBase : IReserva
+    }
+    class AudiovisualDecorator extends ReservaDecorator
+    class EquipamentoFisicaDecorator extends ReservaDecorator
+}
+
+package "Padrão Observer (Notificações)" {
+    interface ReservaObserver {
+        + onReservaAlterada(...)
+    }
+    class ServicoNotificacaoEmail implements ReservaObserver
+}
+
+Main --> SistemaFacade : Usa
+SistemaFacade --> GerenciadorDeReservas : Delega operações
+SistemaFacade --> RepositorioSingleton : Consulta
+GerenciadorDeReservas o-- PoliticaDeReserva : Aplica
+GerenciadorDeReservas o-- ReservaObserver : Notifica
+GerenciadorDeReservas --> IReserva : Cria/Decora
+
+@enduml
