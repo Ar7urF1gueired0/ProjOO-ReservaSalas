@@ -42,15 +42,15 @@ O projeto roda inteiramente no terminal e não possui dependências externas com
 
 2. **Compile o código-fonte:**
 
-```bash
-javac *.java
-```
+   ```bash
+   javac *.java
+   ```
 
 3. **Inicie o sistema:**
 
-```bash
-java Main
-```
+   ```bash
+   java Main
+   ```
 
 ## 🎮 Como Usar (Dados Mockados)
 
