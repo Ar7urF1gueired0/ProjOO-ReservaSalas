@@ -15,6 +15,7 @@ public class SistemaFacade {
     private final RepositorioSingleton repositorio;
     private final GerenciadorDeReservas gerenciador;
     private Usuario usuarioLogado;
+    private ISistemaAdmin adminProxy;
     private String nomePoliticaAtiva = "Primeiro a Reservar";
     public static final LocalDate DIA_ATUAL = LocalDate.now();
 
@@ -34,12 +35,14 @@ public class SistemaFacade {
      * @return true se as credenciais forem válidas, false caso contrário.
      */
     public boolean fazerLogin(String email, String senha) {
-        this.usuarioLogado = repositorio.getUsuarios().stream()
-                .filter(u -> u.getEmail().equalsIgnoreCase(email) && u.getSenha().equals(senha))
-                .findFirst()
-                .orElse(null);
-
-        return this.usuarioLogado != null;
+        for (Usuario u : RepositorioSingleton.getInstance().getUsuarios()) {
+            if (u.getEmail().equals(email) && u.getSenha().equals(senha)) {
+                this.usuarioLogado = u;
+                this.adminProxy = new SistemaAdminProxy(this.usuarioLogado); 
+                return true;
+            }
+        }
+        return false;
     }
 
     public Usuario getUsuarioLogado() {
@@ -48,6 +51,7 @@ public class SistemaFacade {
 
     public void realizarLogout() {
         this.usuarioLogado = null;
+        this.adminProxy = null;
     }
 
     // --- Configuração de Domínio ---
@@ -198,5 +202,15 @@ public class SistemaFacade {
 
     public List<Usuario> listarTodosUsuarios() {
         return repositorio.getUsuarios();
+    }
+
+    public void cadastrarUsuarioAdmin(int tipo, String nome, String email, String senha) {
+        validarSessao();
+        adminProxy.cadastrarUsuario(tipo, nome, email, senha);
+    }
+
+    public void cadastrarSalaAdmin(int tipo, int idSala) {
+        validarSessao();
+        adminProxy.cadastrarSala(tipo, idSala);
     }
 }
