@@ -1,3 +1,6 @@
+import java.util.stream.Collectors;
+import java.util.List;
+
 public class SistemaAdminReal implements ISistemaAdmin {
 
     @Override
@@ -22,5 +25,12 @@ public class SistemaAdminReal implements ISistemaAdmin {
         }
         
         factory.criarSala(idSala);
+    }
+
+    @Override
+    public List<IReserva> consultarHistoricoUsuario(int idBusca){
+        return RepositorioSingleton.getInstance().getReservas().stream()
+            .filter(reserva -> reserva.getUsuarios().stream().anyMatch(u -> u.getId() == idBusca))
+            .collect(Collectors.toList());
     }
 }

@@ -11,7 +11,9 @@ public interface IReserva {
     LocalTime getHoraFim();
     Usuario getOrganizador();
     String getOrganizadorNome();
-    
+    boolean isAtiva();
+    void setAtiva(boolean ativa);
+    String getStatus();
     // Método novo para retornar o que foi reservado
     String getDescricaoItens(); 
 }

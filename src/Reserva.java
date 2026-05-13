@@ -12,6 +12,7 @@ class Reserva implements IReserva{
     private LocalDate data;
     private LocalTime horaInicio;
     private LocalTime horaFim;
+    private boolean ativa = true;
 
     public Reserva(Sala sala, List<Usuario> usuarios, LocalDate data, LocalTime horaInicio, LocalTime horaFim) {
         if (usuarios == null || usuarios.isEmpty()) {
@@ -52,5 +53,33 @@ class Reserva implements IReserva{
     @Override
     public String getDescricaoItens() {
         return "Reserva da sala " + sala.getId();
+    }
+
+    @Override
+    public boolean isAtiva() {
+        return this.ativa;
+    }
+
+    @Override
+    public void setAtiva(boolean ativa) {
+        this.ativa = ativa;
+    }
+
+    @Override
+    public String getStatus() {
+        if (!this.ativa) {
+            return "CANCELADA";
+        }
+        
+        // Verifica se a data da reserva já ficou no passado
+        LocalDate hoje = LocalDate.now();
+        LocalTime agora = LocalTime.now();
+        
+        if (this.getData().isBefore(hoje) || 
+           (this.getData().isEqual(hoje) && this.getHoraFim().isBefore(agora))) {
+            return "PASSADA";
+        }
+        
+        return "ATIVA";
     }
 }

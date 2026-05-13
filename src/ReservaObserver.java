@@ -5,6 +5,7 @@ import java.util.List;
 interface ReservaObserver {
     void onReservaAlterada(IReserva reservaOriginal, IReserva reservaModificada);
     void onReservaCriada(IReserva reserva);
+    void onReservaCancelada(IReserva reservaAntiga, String motivo);
 }
 
 class ServicoNotificacaoEmail implements ReservaObserver {
@@ -33,4 +34,16 @@ class ServicoNotificacaoEmail implements ReservaObserver {
         }
 
     }
+
+    @Override
+    public void onReservaCancelada(IReserva reserva, String motivo){
+        for (Usuario u : reserva.getUsuarios()) {
+            System.out.println("--- ALERTA DE CANCELAMENTO ---");
+            System.out.printf("Para: %s (%s)%n", u.getNome(), u.getEmail());
+            System.out.printf("Sua reserva da sala %d no dia %s foi CANCELADA.%n", reserva.getSala().getId(), reserva.getData());
+            System.out.printf("Motivo: %s%n", motivo);
+            System.out.println("---------------------------------------");
+        }
+    }
+
 }
