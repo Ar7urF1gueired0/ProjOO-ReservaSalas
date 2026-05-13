@@ -10,6 +10,7 @@ public interface IReserva {
     LocalTime getHoraInicio();
     LocalTime getHoraFim();
     Usuario getOrganizador();
+    String getOrganizadorNome();
     
     // Método novo para retornar o que foi reservado
     String getDescricaoItens(); 

@@ -44,6 +44,11 @@ class Reserva implements IReserva{
         return usuarios.get(0);
     }
 
+    public String getOrganizadorNome() {
+        Usuario organizador = usuarios.get(0);
+        return organizador.getNome();
+    }
+
     @Override
     public String getDescricaoItens() {
         return "Reserva da sala " + sala.getId();

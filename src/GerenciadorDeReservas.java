@@ -31,9 +31,15 @@ public class GerenciadorDeReservas {
         this.observadores.remove(observador);
     }
 
-    private void notificarObservadores(IReserva original, IReserva modificada) {
+    private void notificarObservadoresAlteracao(IReserva original, IReserva modificada) {
         for (ReservaObserver obs : observadores) {
             obs.onReservaAlterada(original, modificada);
+        }
+    }
+
+    private void notificarObservadoresCriacao(IReserva original) {
+        for (ReservaObserver obs : observadores) {
+            obs.onReservaCriada(original);
         }
     }
 
@@ -78,6 +84,8 @@ public class GerenciadorDeReservas {
         politica.validar(novaReserva, repositorio.getReservas(), null);
         repositorio.registrarReserva(novaReserva);
 
+        notificarObservadoresCriacao(novaReserva);
+
         return novaReserva;
     }
 
@@ -87,7 +95,7 @@ public class GerenciadorDeReservas {
         politica.validar(reservaModificada, repositorio.getReservas(), reservaOriginal);
         repositorio.atualizarReserva(reservaOriginal, reservaModificada);
 
-        notificarObservadores(reservaOriginal, reservaModificada);
+        notificarObservadoresAlteracao(reservaOriginal, reservaModificada);
 
         return reservaModificada;
     }
