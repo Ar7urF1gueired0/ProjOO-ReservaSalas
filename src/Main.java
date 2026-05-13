@@ -159,6 +159,7 @@ public class Main {
 
     private static void fluxoCriarReserva() {
         System.out.println();
+        Usuario organizador = facade.getUsuarioLogado();
         LocalDate data;
         while (true) {
             data = lerData("Data (dd/MM/yyyy): ");
@@ -228,7 +229,9 @@ public class Main {
         }
 
         System.out.println("\n--- Usuários Registrados ---");
-        facade.listarTodosUsuarios().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
+        facade.listarTodosUsuarios().stream()
+            .filter(u -> u.getId() != organizador.getId())
+            .forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
         
         List<Usuario> convidados = lerConvidadosSeguro("IDs dos Convidados (separados por vírgula, ou vazio): ");
 
@@ -239,7 +242,8 @@ public class Main {
 
     private static void fluxoAlterarReserva() {
         int idReservaAlt = lerInteiro("\nID da Reserva a alterar: ");
-        
+        Usuario organizador = facade.getUsuarioLogado();
+
         LocalDate novaData;
         while (true) {
             novaData = lerData("Nova Data (dd/MM/yyyy): ");
@@ -254,7 +258,9 @@ public class Main {
         LocalTime novoFim = lerHora("Nova Hora Fim (HH:mm): ");
         
         System.out.println("\n--- Usuários Registrados ---");
-        facade.listarTodosUsuarios().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
+        facade.listarTodosUsuarios().stream()
+            .filter(u -> u.getId() != organizador.getId())
+            .forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
         
         List<Usuario> novosConvidados = lerConvidadosSeguro("Novos IDs de Convidados (separados por vírgula, ou vazio): ");
 
