@@ -15,41 +15,17 @@ public class Main {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     public static void main(String[] args) {
-        carregarDadosMock();
+        new Professor("Admin Root", "root@email.com", "admin123");
+        new SalaAula(101);
         executarLoopInteracao();
-    }
-
-    private static void carregarDadosMock() {
-        // Mock Usuários (5 Alunos, 3 Professores)
-        new Aluno("Aluno Um", "a1@email.com", "123");
-        new Aluno("Aluno Dois", "a2@email.com", "123");
-        new Aluno("Aluno Três", "a3@email.com", "123");
-        new Aluno("Aluno Quatro", "a4@email.com", "123");
-        new Aluno("Aluno Cinco", "a5@email.com", "123");
-        
-        new Professor("Prof Um", "p1@email.com", "123");
-        new Professor("Prof Dois", "p2@email.com", "123");
-        new Professor("Prof Três", "p3@email.com", "123");
-
-        // Mock Salas via Factory (3 de cada)
-        SalaFactory labFactory = new LaboratorioFactory();
-        SalaFactory estudoFactory = new SalaEstudoFactory();
-        SalaFactory aulaFactory = new SalaAulaFactory();
-
-        for (int i = 1; i <= 3; i++) {
-            labFactory.criarSala(100 + i);    // IDs 101, 102, 103
-            estudoFactory.criarSala(200 + i); // IDs 201, 202, 203
-            aulaFactory.criarSala(300 + i);   // IDs 301, 302, 303
-        }
-        System.out.println("Sistema inicializado. Dados mock carregados com sucesso.\n");
     }
 
     private static void executarLoopInteracao() {
         boolean executando = true;
-
         while (executando) {
             garantirAutenticacao(); // Bloqueia o acesso até o login
 
+            boolean isProfessor = facade.getUsuarioLogado() instanceof Professor;
             // Adicionada quebra de linha inicial para espaçar as iterações do menu principal
             System.out.println("\n=============================================");
             System.out.println("Usuário Logado: " + facade.getUsuarioLogado().getNome());
@@ -58,8 +34,11 @@ public class Main {
             System.out.println("3. Gerenciar Reservas");
             System.out.println("4. Listar Minhas Reservas");
             System.out.println("5. Relatório Diário");
+            if (isProfessor) {
+                System.out.println("6. [Admin] Cadastrar Novo Usuário");
+                System.out.println("7. [Admin] Cadastrar Nova Sala");
+            }
             System.out.println("0. Sair");
-
             int opcao = lerInteiro("Escolha uma opção: ");
 
             try {
@@ -109,6 +88,14 @@ public class Main {
                                         r.getId(), r.getDescricaoItens(), r.getHoraInicio(), r.getHoraFim(), r.getOrganizador().getNome());
                             }
                         }
+                        break;
+                    case 6:
+                        if (isProfessor) fluxoCadastrarUsuario();
+                        else System.out.println("Opção inválida.");
+                        break;
+                    case 7:
+                        if (isProfessor) fluxoCadastrarSala();
+                        else System.out.println("Opção inválida.");
                         break;
                     case 0:
                         executando = false;
@@ -354,5 +341,38 @@ public class Main {
         return RepositorioSingleton.getInstance().getUsuarios().stream()
                 .filter(u -> ids.contains(u.getId()))
                 .collect(Collectors.toList());
+    }
+
+    private static void fluxoCadastrarUsuario() {
+        System.out.println("\n--- [Admin] Cadastrar Novo Usuário ---");
+        System.out.println("1. Aluno | 2. Professor");
+        int tipo = lerInteiro("Tipo de usuário (1 ou 2): ");
+        System.out.print("Nome: ");
+        String nome = scanner.nextLine();
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+
+        try {
+            facade.cadastrarUsuarioAdmin(tipo, nome, email, senha);
+            System.out.println("Sucesso: Usuário cadastrado!");
+        } catch (Exception e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
+
+    private static void fluxoCadastrarSala() {
+        System.out.println("\n--- [Admin] Cadastrar Nova Sala ---");
+        System.out.println("1. Laboratório | 2. Sala de Aula | 3. Sala de Estudo");
+        int tipo = lerInteiro("Tipo de sala (1 a 3): ");
+        int idSala = lerInteiro("ID Numérico da sala: ");
+
+        try {
+            facade.cadastrarSalaAdmin(tipo, idSala);
+            System.out.println("Sucesso: Sala cadastrada!");
+        } catch (Exception e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
     }
 }
