@@ -99,8 +99,8 @@ public class SistemaFacade {
         boolean isProfessor = this.usuarioLogado instanceof Professor;
 
         for (Sala sala : repositorio.getSalas()) {
-            // Busca se existe alguma reserva conflitante para esta sala no horário especificado
             IReserva conflito = repositorio.getReservas().stream()
+                    .filter(IReserva::isAtiva)        
                     .filter(r -> r.getSala().getId() == sala.getId() &&
                                  r.getData().equals(data) &&
                                  r.getHoraInicio().isBefore(fim) &&
@@ -120,6 +120,21 @@ public class SistemaFacade {
         return disponiveis;
     }
 
+    public List<IReserva> listarReservasGerenciaveis() {
+        validarSessao();
+        boolean isAdmin = this.usuarioLogado instanceof Professor;
+        
+        if (isAdmin) {
+            return repositorio.getReservas().stream()
+                    .filter(IReserva::isAtiva)
+                    .collect(Collectors.toList());
+        } else {
+            return consultarMeuHistorico().stream()
+                    .filter(IReserva::isAtiva)
+                    .collect(Collectors.toList());
+        }
+    }
+
     public List<ReservaUsuarioDTO> listarReservasUsuarioAtivo() {
         if (this.usuarioLogado == null) return Collections.emptyList();
 
@@ -131,7 +146,7 @@ public class SistemaFacade {
 
     // --- Operações de Reserva (CRUD) ---
 
-    public IReserva criarReserva(int idSala, List<Usuario> convidados, LocalDate data, LocalTime horaInicio, LocalTime horaFim, List<String> materiaisExtra) {
+    public IReserva criarReserva(int idSala, List<Usuario> convidados, LocalDate data, LocalTime horaInicio, LocalTime horaFim, List<String> materiaisExtra) throws Exception {
         validarSessao();
 
         Sala sala = repositorio.getSalas().stream()
@@ -144,16 +159,7 @@ public class SistemaFacade {
         return gerenciador.criarReserva(sala, usuariosReserva, data, horaInicio, horaFim, materiaisExtra);
     }
 
-    public boolean deletarReserva(int idReserva) {
-        if (this.usuarioLogado == null) return false;
-
-        IReserva reserva = buscarReservaValidandoAutorizacao(idReserva);
-        repositorio.removerReserva(reserva);
-        
-        return true;
-    }
-
-    public IReserva alterarReserva(int idReserva, List<Usuario> convidados, LocalDate novaData, LocalTime novoInicio, LocalTime novoFim) {
+    public IReserva alterarReserva(int idReserva, List<Usuario> convidados, LocalDate novaData, LocalTime novoInicio, LocalTime novoFim) throws Exception{
         validarSessao();
 
         IReserva reservaOriginal = buscarReservaValidandoAutorizacao(idReserva);
@@ -179,8 +185,10 @@ public class SistemaFacade {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada."));
 
-        if (reserva.getOrganizador().getId() != this.usuarioLogado.getId()) {
-            throw new SecurityException("Acesso negado: Apenas o organizador pode modificar esta reserva.");
+        boolean isAdmin = this.usuarioLogado instanceof Professor;
+        
+        if (reserva.getOrganizador().getId() != this.usuarioLogado.getId() && !isAdmin) {
+            throw new SecurityException("Acesso negado: Apenas o organizador ou um Admin podem modificar esta reserva.");
         }
         return reserva;
     }
@@ -212,5 +220,29 @@ public class SistemaFacade {
     public void cadastrarSalaAdmin(int tipo, int idSala) {
         validarSessao();
         adminProxy.cadastrarSala(tipo, idSala);
+    }
+
+    public List<IReserva> consultarMeuHistorico() {
+        validarSessao();
+        int meuId = this.usuarioLogado.getId();
+        
+        // Busca direto no repositório usando o próprio ID
+        return RepositorioSingleton.getInstance().getReservas().stream()
+                .filter(reserva -> reserva.getUsuarios().stream()
+                                        .anyMatch(u -> u.getId() == meuId))
+                .collect(Collectors.toList());
+        }
+
+    public List<IReserva> consultarHistoricoUsuarioAdmin(int idBusca) {
+        validarSessao();
+        return adminProxy.consultarHistoricoUsuario(idBusca);
+    }
+
+    public void cancelarReserva(int idReserva) throws Exception {
+        validarSessao();
+        
+        boolean isAdmin = this.usuarioLogado instanceof Professor;
+        
+        gerenciador.cancelarReserva(idReserva, this.usuarioLogado, isAdmin);
     }
 }

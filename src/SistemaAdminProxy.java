@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class SistemaAdminProxy implements ISistemaAdmin {
     private SistemaAdminReal adminReal;
     private Usuario usuarioLogado;
@@ -26,5 +28,11 @@ public class SistemaAdminProxy implements ISistemaAdmin {
     public void cadastrarSala(int tipo, int idSala) {
         verificarPermissao();
         adminReal.cadastrarSala(tipo, idSala);
+    }
+
+    @Override
+    public List<IReserva> consultarHistoricoUsuario (int idBusca){
+        verificarPermissao();
+        return adminReal.consultarHistoricoUsuario(idBusca);
     }
 }

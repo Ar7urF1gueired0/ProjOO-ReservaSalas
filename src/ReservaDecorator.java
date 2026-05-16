@@ -31,7 +31,25 @@ public abstract class ReservaDecorator implements IReserva {
     public Usuario getOrganizador() { return reservaEmbrulhada.getOrganizador(); }
 
     @Override
+    public String getOrganizadorNome() { return reservaEmbrulhada.getOrganizadorNome(); }
+
+    @Override
     public String getDescricaoItens() { 
         return reservaEmbrulhada.getDescricaoItens(); 
+    }
+
+    @Override
+    public boolean isAtiva() {
+        return reservaEmbrulhada.isAtiva();
+    }
+
+    @Override
+    public void setAtiva(boolean ativa) {
+        reservaEmbrulhada.setAtiva(ativa);
+    }
+
+    @Override
+    public String getStatus() {
+        return reservaEmbrulhada.getStatus();
     }
 }
