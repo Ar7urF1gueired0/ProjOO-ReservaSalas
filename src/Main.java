@@ -15,8 +15,30 @@ public class Main {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     public static void main(String[] args) {
-        new Professor("Admin Root", "root@email.com", "admin123");
-        new SalaAula(101);
+        new Professor("Admin Root", "root@email.com", "admin123"); // <-- Usuário Root
+
+        // Mock para facilitar os testes
+        new Aluno("Aluno Um", "a1@email.com", "123");
+        new Aluno("Aluno Dois", "a2@email.com", "123");
+        new Aluno("Aluno Três", "a3@email.com", "123");
+        new Aluno("Aluno Quatro", "a4@email.com", "123");
+        new Aluno("Aluno Cinco", "a5@email.com", "123");
+        
+        new Professor("Prof Um", "p1@email.com", "123");
+        new Professor("Prof Dois", "p2@email.com", "123");
+        new Professor("Prof Três", "p3@email.com", "123");
+
+        SalaFactory labFactory = new LaboratorioFactory();
+        SalaFactory estudoFactory = new SalaEstudoFactory();
+        SalaFactory aulaFactory = new SalaAulaFactory();
+
+        for (int i = 1; i <= 3; i++) {
+            labFactory.criarSala(100 + i);    // IDs 101, 102, 103
+            estudoFactory.criarSala(200 + i); // IDs 201, 202, 203
+            aulaFactory.criarSala(300 + i);   // IDs 301, 302, 303
+        }
+        System.out.println("Sistema inicializado. Dados mock carregados com sucesso.\n");
+
         executarLoopInteracao();
     }
 
@@ -30,14 +52,15 @@ public class Main {
             System.out.println("\n=============================================");
             System.out.println("Usuário Logado: " + facade.getUsuarioLogado().getNome());
             System.out.println("1. Alterar Conta (Logout)");
-            System.out.println("2. Alterar Regra de Prioridade");
+            System.out.println("2. [Admin] Alterar Regra de Prioridade");
             System.out.println("3. Gerenciar Reservas");
-            System.out.println("4. Listar Minhas Reservas");
+            System.out.println("4. Meu histórico");
             System.out.println("5. Relatório Diário");
             System.out.println("8. Chat");
             if (isProfessor) {
                 System.out.println("6. [Admin] Cadastrar Novo Usuário");
                 System.out.println("7. [Admin] Cadastrar Nova Sala");
+                System.out.println("8. [Admin] Consultar Histórico de um Usuário");
             }
             System.out.println("0. Sair");
             int opcao = lerInteiro("Escolha uma opção: ");
@@ -49,34 +72,27 @@ public class Main {
                         System.out.println("\nLogout realizado.");
                         break;
                     case 2:
-                        System.out.println("\nPolítica Atual Ativa: " + facade.getNomePoliticaAtiva());
-                        System.out.println("1 - Primeiro a Reservar | 2 - Prioridade Professor");
-                        int pol = lerInteiro("Opção: ");
-                        if (pol == 1) {
-                            facade.alterarRegraDePrioridade(new PoliticaPrimeiroAReservar(), "Primeiro a Reservar");
-                            System.out.println("Política alterada para: Primeiro a Reservar.");
-                        } else if (pol == 2) {
-                            facade.alterarRegraDePrioridade(new PoliticaPrioridadeProfessor(), "Prioridade Professor");
-                            System.out.println("Política alterada para: Prioridade Professor.");
-                        } else {
-                            System.out.println("Opção inválida.");
+                        if (isProfessor){
+                            System.out.println("\nPolítica Atual Ativa: " + facade.getNomePoliticaAtiva());
+                            System.out.println("1 - Primeiro a Reservar | 2 - Prioridade Professor");
+                            int pol = lerInteiro("Opção: ");
+                            if (pol == 1) {
+                                facade.alterarRegraDePrioridade(new PoliticaPrimeiroAReservar(), "Primeiro a Reservar");
+                                System.out.println("Política alterada para: Primeiro a Reservar.");
+                            } else if (pol == 2) {
+                                facade.alterarRegraDePrioridade(new PoliticaPrioridadeProfessor(), "Prioridade Professor");
+                                System.out.println("Política alterada para: Prioridade Professor.");
+                            } else {
+                                System.out.println("Opção inválida.");
+                            }
                         }
+                        else System.out.println("\nVocê não tem permissão para alterar as regras de prioridade. Contate um administrador.");
                         break;
                     case 3:
                         abrirMenuGerenciarReservas();
                         break;
                     case 4:
-                        System.out.println("\n--- Minhas Reservas ---");
-                        List<SistemaFacade.ReservaUsuarioDTO> minhasReservas = facade.listarReservasUsuarioAtivo();
-                        if (minhasReservas.isEmpty()) {
-                            System.out.println("A lista está vazia!");
-                        }
-                        for (SistemaFacade.ReservaUsuarioDTO dto : minhasReservas) {
-                            String papel = dto.isOrganizador ? "Organizador" : "Convidado";
-                           System.out.printf("ID Reserva: %d | Detalhes: %s | Data: %s | Horário: %s - %s | Papel: %s%n",
-                                    dto.reserva.getId(), dto.reserva.getDescricaoItens(), dto.reserva.getData(),
-                                    dto.reserva.getHoraInicio(), dto.reserva.getHoraFim(), papel);
-                        }
+                        fluxoListarMeuHistorico();
                         break;
                     case 5:
                         System.out.println("\n--- Relatório Diário (" + SistemaFacade.DIA_ATUAL.format(DATE_FORMAT) + ") ---");
@@ -158,10 +174,7 @@ public class Main {
                 switch (opcao) {
                     case 1: fluxoCriarReserva(); break;
                     case 2: fluxoAlterarReserva(); break;
-                    case 3:
-                        int idDel = lerInteiro("\nID da Reserva a deletar: ");
-                        if (facade.deletarReserva(idDel)) System.out.println("Reserva deletada.");
-                        break;
+                    case 3: fluxoCancelarReserva(); break;
                     case 0: noSubmenu = false; break;
                     default: System.out.println("Opção inválida.");
                 }
@@ -175,6 +188,7 @@ public class Main {
 
     private static void fluxoCriarReserva() {
         System.out.println();
+        Usuario organizador = facade.getUsuarioLogado();
         LocalDate data;
         while (true) {
             data = lerData("Data (dd/MM/yyyy): ");
@@ -242,20 +256,64 @@ public class Main {
             if (escolhas.contains(1)) materiaisExtra.add("CANETAS");
             if (escolhas.contains(2)) materiaisExtra.add("COMPUTADOR");
         }
+        List<Usuario> convidados = null;
+        if (!tipoSala.equals("SalaEstudo")){System.out.println("\n--- Usuários Registrados ---");
+            facade.listarTodosUsuarios().stream()
+                .filter(u -> u.getId() != organizador.getId())
+                .forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
+            
+            convidados = lerConvidadosSeguro("IDs dos Convidados (separados por vírgula, ou vazio): ");
+        }
+        try {
+            IReserva nova = facade.criarReserva(idSala, convidados, data, inicio, fim, materiaisExtra);
+            System.out.println("\nReserva criada com sucesso! ID: " + nova.getId());
+            System.out.println("Itens: " + nova.getDescricaoItens());
+        } catch (Exception e){
+            System.out.println("Não foi possível criar a reserva: " + e.getMessage());
+        }
+    }
 
-        System.out.println("\n--- Usuários Registrados ---");
-        facade.listarTodosUsuarios().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
-        
-        List<Usuario> convidados = lerConvidadosSeguro("IDs dos Convidados (separados por vírgula, ou vazio): ");
+    private static void fluxoCancelarReserva(){
+        List<IReserva> gerenciaveis = facade.listarReservasGerenciaveis();
 
-        IReserva nova = facade.criarReserva(idSala, convidados, data, inicio, fim, materiaisExtra);
-        System.out.println("\nReserva criada com sucesso! ID: " + nova.getId());
-        System.out.println("Itens: " + nova.getDescricaoItens());
+        if (gerenciaveis.isEmpty()) {
+            System.out.println("=============================================\n");
+            System.out.println("Você não possui reservas ativas para cancelar.");
+            return;
+        }
+        System.out.println("=============================================\n");
+        System.out.println("Reservas disponíveis para gerenciamento:");
+        for (IReserva r : gerenciaveis) {
+            System.out.printf("Reserva ID: %d | Sala: %d | Data: %s | Hora: %s - %s| Itens: %s | Status - %s | Org: %s%n",
+            r.getId(), r.getSala().getId(), r.getData(), r.getHoraInicio(), r.getHoraFim(), r.getDescricaoItens(), r.getStatus(), r.getOrganizadorNome());
+        }
+        int idDel = lerInteiro("\nID da Reserva a cancelar (0 para voltar): ");
+        if (idDel == 0){return;}
+        try {
+            facade.cancelarReserva(idDel);
+            System.out.println("Sucesso: Reserva cancelada e usuários notificados.");
+        } catch (Exception e) {
+            System.out.println("Erro ao cancelar: " + e.getMessage());
+        }
     }
 
     private static void fluxoAlterarReserva() {
+        List<IReserva> gerenciaveis = facade.listarReservasGerenciaveis();
+
+        if (gerenciaveis.isEmpty()) {
+            System.out.println("Você não possui reservas ativas para cancelar.");
+            return;
+        }
+        System.out.println("=============================================\n");
+        System.out.println("Reservas disponíveis para gerenciamento:");
+        for (IReserva r : gerenciaveis) {
+            System.out.printf("Reserva ID: %d | Sala: %d | Data: %s | Hora: %s - %s| Itens: %s | Status - %s | Org: %s%n",
+            r.getId(), r.getSala().getId(), r.getData(), r.getHoraInicio(), r.getHoraFim(), r.getDescricaoItens(), r.getStatus(), r.getOrganizadorNome());
+        }
+
         int idReservaAlt = lerInteiro("\nID da Reserva a alterar: ");
-        
+        Usuario organizador = facade.getUsuarioLogado();
+
         LocalDate novaData;
         while (true) {
             novaData = lerData("Nova Data (dd/MM/yyyy): ");
@@ -270,11 +328,17 @@ public class Main {
         LocalTime novoFim = lerHora("Nova Hora Fim (HH:mm): ");
         
         System.out.println("\n--- Usuários Registrados ---");
-        facade.listarTodosUsuarios().forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
+        facade.listarTodosUsuarios().stream()
+            .filter(u -> u.getId() != organizador.getId())
+            .forEach(u -> System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome()));
         
         List<Usuario> novosConvidados = lerConvidadosSeguro("Novos IDs de Convidados (separados por vírgula, ou vazio): ");
 
-        facade.alterarReserva(idReservaAlt, novosConvidados, novaData, novoInicio, novoFim);
+        try {
+            facade.alterarReserva(idReservaAlt, novosConvidados, novaData, novoInicio, novoFim);            
+        } catch (Exception e){
+            System.out.println("Erro ao alterar reserva: " + e.getMessage());
+        }
         System.out.println("\nReserva alterada com sucesso! Observadores notificados.");
     }
 
@@ -392,6 +456,47 @@ public class Main {
         try {
             facade.cadastrarSalaAdmin(tipo, idSala);
             System.out.println("Sucesso: Sala cadastrada!");
+        } catch (Exception e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
+
+    private static void fluxoListarMeuHistorico() {
+        System.out.println("\n--- Minhas Reservas (Histórico) ---");
+        List<IReserva> historico = facade.consultarMeuHistorico();
+        
+        if (historico.isEmpty()) {
+            System.out.println("\n=============================================");
+            System.out.println("Você ainda não possui reservas.");
+            return;
+        }
+        
+        for (IReserva r : historico) {
+            System.out.printf("Reserva ID: %d | Sala: %d | Data: %s | Hora: %s - %s| Itens: %s | Status - %s | Org: %s%n",
+                              r.getId(), r.getSala().getId(), r.getData(), r.getHoraInicio(), r.getHoraFim(), r.getDescricaoItens(), r.getStatus(), r.getOrganizadorNome());
+        }
+    }
+
+    private static void fluxoConsultarHistoricoAdmin() {
+        System.out.println("\n--- [Admin] Histórico de Usuário ---");
+        
+        // Listar todos os usuários antes para facilitar a busca do Admin
+        facade.listarTodosUsuarios().forEach(u -> 
+            System.out.println("ID: " + u.getId() + " | Nome: " + u.getNome() + " | Tipo: " + u.getClass().getSimpleName())
+        );
+        
+        int idBusca = lerInteiro("\nDigite o ID do usuário que deseja consultar: ");
+        
+        try {
+            List<IReserva> historico = facade.consultarHistoricoUsuarioAdmin(idBusca);
+            if (historico.isEmpty()) {
+                System.out.println("Este usuário não possui histórico de reservas.");
+            } else {
+                for (IReserva r : historico) {
+                    System.out.printf("Reserva ID: %d | Sala: %d | Data: %s | Hora: %s - %s| Itens: %s | Status - %s | Org: %s%n",
+                    r.getId(), r.getSala().getId(), r.getData(), r.getHoraInicio(), r.getHoraFim(), r.getDescricaoItens(), r.getStatus(), r.getOrganizadorNome());
+                }
+            }
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
         }
