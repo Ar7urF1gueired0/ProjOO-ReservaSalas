@@ -4,9 +4,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
-import java.util.Map;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
@@ -34,6 +34,7 @@ public class Main {
             System.out.println("3. Gerenciar Reservas");
             System.out.println("4. Listar Minhas Reservas");
             System.out.println("5. Relatório Diário");
+            System.out.println("8. Chat");
             if (isProfessor) {
                 System.out.println("6. [Admin] Cadastrar Novo Usuário");
                 System.out.println("7. [Admin] Cadastrar Nova Sala");
@@ -96,6 +97,21 @@ public class Main {
                     case 7:
                         if (isProfessor) fluxoCadastrarSala();
                         else System.out.println("Opção inválida.");
+                        break;
+                    case 8:
+                        System.out.println("\n--- Chat ---");
+                        Usuario usuarioLogado = facade.getUsuarioLogado();
+                        if (usuarioLogado == null) {
+                            System.out.println("Nenhum usuário autenticado.");
+                            break;
+                        }
+                        System.out.println("Enviando como: " + usuarioLogado.getNome());
+                        String mensagem = lerString("Digite sua mensagem: ").trim();
+                        if (mensagem.isEmpty()) {
+                            System.out.println("Mensagem vazia. Nada foi enviado.");
+                            break;
+                        }
+                        usuarioLogado.enviarMensagem(mensagem);
                         break;
                     case 0:
                         executando = false;
@@ -315,6 +331,11 @@ public class Main {
                 System.out.println("Formato inválido. Siga o padrão HH:mm.");
             }
         }
+    }
+
+    private static String lerString(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine();
     }
 
     private static List<Usuario> lerConvidadosSeguro(String prompt) {

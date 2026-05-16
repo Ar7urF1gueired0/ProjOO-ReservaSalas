@@ -15,6 +15,8 @@ class Usuario {
         
         // Auto-registro no repositório
         RepositorioSingleton.getInstance().registrarUsuario(this);
+        // Registrar no mediator de chat (singleton) para receber/propagar mensagens
+        ChatMediatorImpl.getInstance().adicionarUsuario(this);
     }
 
     // Getters
@@ -22,17 +24,29 @@ class Usuario {
     public String getNome() { return nome; }
     public String getEmail() { return email; }
     public String getSenha() { return senha; }
+
+    // Enviar mensagem via mediator
+    public void enviarMensagem(String mensagem) {
+        System.out.println(this.nome + " enviou: " + mensagem);
+        ChatMediatorImpl.getInstance().enviarMensagem(mensagem, this);
+    }
+
+    // Receber mensagem do mediator
+    public void receberMensagem(String mensagem, Usuario remetente) {
+        System.out.println(this.nome + " recebeu de " + remetente.getNome() + ": " + mensagem);
+    }
+
 }
 
 // Classes filhas para representar tipos específicos de usuários
 class Aluno extends Usuario {
     public Aluno(String nome, String email, String senha) {
         super(nome, email, senha);
-    }
+     }
 }
 
 class Professor extends Usuario {
     public Professor(String nome, String email, String senha) {
         super(nome, email, senha);
-    }
+     }
 }
